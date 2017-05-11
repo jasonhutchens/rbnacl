@@ -26,6 +26,10 @@ module RbNaCl
                          :crypto_box_curve25519xsalsa20poly1305_keypair,
                          [:pointer, :pointer]
 
+        sodium_function  :box_curve25519xsalsa20poly1305_seed_keypair,
+                         :crypto_box_curve25519xsalsa20poly1305_seed_keypair,
+                         [:pointer, :pointer, :pointer]
+
         # The size of the key, in bytes
         BYTES = Boxes::Curve25519XSalsa20Poly1305::PRIVATEKEYBYTES
 
@@ -50,10 +54,14 @@ module RbNaCl
         # @raise [RbNaCl::CryptoError] if key generation fails, due to insufficient randomness.
         #
         # @return [RbNaCl::PrivateKey] A new private key, with the associated public key also set.
-        def self.generate
+        def self.generate(seed=nil)
           pk = Util.zeros(Boxes::Curve25519XSalsa20Poly1305::PUBLICKEYBYTES)
           sk = Util.zeros(Boxes::Curve25519XSalsa20Poly1305::PRIVATEKEYBYTES)
-          box_curve25519xsalsa20poly1305_keypair(pk, sk) || raise(CryptoError, "Failed to generate a key pair")
+          if (seed)
+            box_curve25519xsalsa20poly1305_seed_keypair(pk, sk, seed) || raise(CryptoError, "Failed to generate a key pair")
+          else
+            box_curve25519xsalsa20poly1305_keypair(pk, sk) || raise(CryptoError, "Failed to generate a key pair")
+          end
           new(sk)
         end
 
